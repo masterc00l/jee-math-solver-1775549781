@@ -36,26 +36,29 @@ export const Home: React.FC = () => {
 
           <div className="mt-4 border-t pt-4">
             <button
-              onClick={async () => {
-                setError(null);
-                try {
-                  const res = await fetch('/api/llm', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: 'Hello', key: apiKey })
-              });
-              const data = await res.json();
-              if (res.ok) {
-                alert('✅ API works! Response: ' + JSON.stringify(data).slice(0, 200));
-              } else {
-                const msg = data?.error?.message || data?.message || JSON.stringify(data) || res.status.toString();
-                alert('❌ Error: ' + msg);
-              } }
-              }}
-              className="px-3 py-1.5 bg-gray-800 text-white text-sm rounded"
-            >
-              Test API
-            </button>
+  onClick={async () => {
+    setError(null);
+    try {
+      const res = await fetch('/api/llm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: 'Hello', key: apiKey })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert('✅ API works! Response: ' + JSON.stringify(data).slice(0, 200));
+      } else {
+        const msg = data?.error?.message || data?.message || JSON.stringify(data) || res.status.toString();
+        alert('❌ Error: ' + msg);
+      }
+    } catch (e: any) {
+      alert('❌ Network error: ' + e.message);
+    }
+  }}
+  className="px-3 py-1.5 bg-gray-800 text-white text-sm rounded"
+>
+  Test API
+</button>
             <p className="text-xs text-gray-500 mt-1">Checks connectivity to the Vercel serverless function using your API key.</p>
           </div>
         </div>
