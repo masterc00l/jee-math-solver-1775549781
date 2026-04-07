@@ -6,7 +6,7 @@ import { generateSolution } from '../lib/llm';
 const MODELS = [
   { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'google' },
   { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', provider: 'google' },
-  { id: 'openai/gpt-oss-20b', name: 'OpenAI OSS 20B (via Groq)', provider: 'groq' },
+  { id: \'openai/gpt-oss-120b\', name: \'OpenAI OSS 120B (via Groq)\', provider: \'groq\' },
   { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B (Groq)', provider: 'groq' },
   { id: 'google/gemma-4-31b-it', name: 'Gemma 4 31B (OpenRouter)', provider: 'openrouter' },
   { id: 'anthropic/claude-3-haiku', name: 'Claude Haiku (OpenRouter)', provider: 'openrouter' },
