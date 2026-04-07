@@ -4,6 +4,9 @@ import { SolutionViewer } from '../components/SolutionViewer';
 import { generateSolution } from '../lib/llm';
 
 const MODELS = [
+    { id: 'saaras', name: 'Saaras (Sarvam Native)' },
+    { id: 'mistral-large', name: 'Mistral Large (Sarvam)' },
+    
     { id: 'qwen/qwen3.6-plus:free', name: 'Qwen 3.6 Plus (Free)' },
 
   { id: 'qwen/qwen3.6-plus:free', name: 'Gemma 4 31B' },
@@ -13,7 +16,7 @@ const MODELS = [
 
 export const Home: React.FC = () => {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('openrouter_key') || '');
-  const [model, setModel] = useState('qwen/qwen3.6-plus:free');
+  const [model, setModel] = useState('saaras');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [solution, setSolution] = useState<any>(null);
