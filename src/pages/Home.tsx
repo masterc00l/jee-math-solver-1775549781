@@ -4,12 +4,17 @@ import { SolutionViewer } from '../components/SolutionViewer';
 import { generateSolution } from '../lib/llm';
 
 const MODELS = [
-    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
-    { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
-  ];
+  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'google' },
+  { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', provider: 'google' },
+  { id: 'openai/gpt-oss-20b', name: 'OpenAI OSS 20B (via Groq)', provider: 'groq' },
+  { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B (Groq)', provider: 'groq' },
+  { id: 'google/gemma-4-31b-it', name: 'Gemma 4 31B (OpenRouter)', provider: 'openrouter' },
+  { id: 'anthropic/claude-3-haiku', name: 'Claude Haiku (OpenRouter)', provider: 'openrouter' },
+]
 
 export const Home: React.FC = () => {
   const [apiKey, setApiKey] = useState('');
+  const [provider, setProvider] = useState('google');
   const [model, setModel] = useState('gemini-2.5-flash');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +24,7 @@ export const Home: React.FC = () => {
     if (!apiKey) { setError('Please enter your Google API key'); return; }
     setLoading(true); setError(null);
     try {
-      const sol = await generateSolution(text, model, apiKey);
+      const sol = await generateSolution(text, model, apiKey, provider);
       setSolution(sol);
     } catch (e: any) { setError(e.message); } finally { setLoading(false); }
   };
@@ -42,7 +47,7 @@ export const Home: React.FC = () => {
       const res = await fetch('/api/llm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: 'Hello', apiKey })
+        body: JSON.stringify({ text: 'Hello', apiKey, provider })
       });
       const data = await res.json();
       if (res.ok) {
