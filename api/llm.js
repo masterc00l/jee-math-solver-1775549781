@@ -6,7 +6,25 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'text, model, provider, and apiKey are required' });
   }
 
-  try {
+  // Simple in-memory rate limiting (5 requests per minute per IP)
+  if (!global.__rate_limit) global.__rate_limit = new Map();
+  const clientId = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+  const now = Date.now();
+  const bucket = global.__rate_limit;
+  if (bucket.has(clientId)) {
+    const { last, count } = bucket.get(clientId);
+    if (now - last < 60_000 && count >= 5) {
+      return res.status(429).json({ error: 'Rate limit exceeded (5/min)' });
+    }
+    bucket.set(clientId, { last: now, count: count + 1 });
+  } else {
+    bucket.set(clientId, { last: now, count: 1 });
+  }
+
+  const MAX_RETRIES = 3;
+  const INITIAL_DELAY = 2000; // 2 seconds
+
+  async function callProviderWithRetry(attempt = 0) {
     let url: string;
     let headers: Record<string, string> = { 'Content-Type': 'application/json' };
     let body: any;
@@ -56,17 +74,36 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Unknown provider' });
     }
 
-    const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({ error: 'Provider error' }));
-      return res.status(response.status).json(err);
+    try {
+      const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
+      if (!response.ok) {
+        const errText = await response.text().catch(() => '');
+        let errObj = { error: 'Provider error', status: response.status };
+        try { errObj = JSON.parse(errText); } catch {}
+        return { status: response.status, error: errObj };
+      }
+      return { ok: true, data: await response.json() };
+    } catch (err: any) {
+      const isRetryable = !err.ok &&
+        (err.status >= 500 || err.status === 429 ||
+         err.code === 'ECONNABORTED' || err.code === 'ETIMEDOUT');
+      if (isRetryable && attempt < MAX_RETRIES - 1) {
+        const delay = INITIAL_DELAY * Math.pow(2, attempt);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return callProviderWithRetry(attempt + 1);
+      }
+      throw err;
     }
+  }
 
-    const data = await response.json();
+  try {
+    const result = await callProviderWithRetry();
+    if (!result.ok) {
+      return res.status(result.status || 502).json(result.error);
+    }
+    const data = result.data;
 
-    // Parse the model output which should be JSON inside the message content (OpenRouter/Groq) or directly JSON (Google)
-    let parsed;
+    let parsed: any;
     if (provider === 'google') {
       const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!textResponse) throw new Error('No content from Google');
@@ -80,6 +117,6 @@ export default async function handler(req, res) {
     if (!parsed.approaches?.length) throw new Error('Invalid solution format');
     return res.status(200).json(parsed);
   } catch (err) {
-    res.status(500).json({ error: 'Internal server error', message: err.message });
+    return res.status(500).json({ error: 'Internal server error', message: err.message });
   }
 }
