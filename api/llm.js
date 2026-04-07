@@ -3,8 +3,8 @@ export default async function handler(req, res) {
   const { text, model = 'gemini-2.5-flash' } = req.body;
   if (!text) return res.status(400).json({ error: 'text is required' });
 
-  const apiKey = process.env.GOOGLE_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'GOOGLE_API_KEY not set on server' });
+  const apiKey = req.body.apiKey || process.env.GOOGLE_API_KEY;
+  if (!apiKey) return res.status(400).json({ error: 'Missing Google API key' });
 
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;

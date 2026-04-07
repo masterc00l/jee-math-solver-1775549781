@@ -9,15 +9,17 @@ const MODELS = [
   ];
 
 export const Home: React.FC = () => {
+  const [apiKey, setApiKey] = useState('');
   const [model, setModel] = useState('gemini-2.5-flash');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [solution, setSolution] = useState<any>(null);
 
   const solve = async (text: string) => {
+    if (!apiKey) { setError('Please enter your Google API key'); return; }
     setLoading(true); setError(null);
     try {
-      const sol = await generateSolution(text, model);
+      const sol = await generateSolution(text, model, apiKey);
       setSolution(sol);
     } catch (e: any) { setError(e.message); } finally { setLoading(false); }
   };
@@ -40,7 +42,7 @@ export const Home: React.FC = () => {
       const res = await fetch('/api/llm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: 'Hello' })
+        body: JSON.stringify({ text: 'Hello', apiKey })
       });
       const data = await res.json();
       if (res.ok) {
