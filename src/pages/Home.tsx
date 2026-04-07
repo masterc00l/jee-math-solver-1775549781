@@ -4,15 +4,9 @@ import { SolutionViewer } from '../components/SolutionViewer';
 import { generateSolution } from '../lib/llm';
 
 const MODELS = [
-    { id: 'saaras', name: 'Saaras (Sarvam Native)' },
+    { id: 'saaras', name: 'Sarvam 105B' },
     { id: 'mistral-large', name: 'Mistral Large (Sarvam)' },
-    
-    { id: 'qwen/qwen3.6-plus:free', name: 'Qwen 3.6 Plus (Free)' },
-
-  { id: 'qwen/qwen3.6-plus:free', name: 'Gemma 4 31B' },
-  { id: 'anthropic/claude-3-haiku', name: 'Claude Haiku' },
-  { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B' },
-];
+  ];
 
 export const Home: React.FC = () => {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('openrouter_key') || '');
