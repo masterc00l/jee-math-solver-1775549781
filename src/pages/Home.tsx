@@ -4,22 +4,20 @@ import { SolutionViewer } from '../components/SolutionViewer';
 import { generateSolution } from '../lib/llm';
 
 const MODELS = [
-    { id: 'saaras', name: 'Sarvam 105B' },
-    { id: 'mistral-large', name: 'Mistral Large (Sarvam)' },
+    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
+    { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
   ];
 
 export const Home: React.FC = () => {
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('openrouter_key') || '');
-  const [model, setModel] = useState('saaras');
+  const [model, setModel] = useState('gemini-2.5-flash');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [solution, setSolution] = useState<any>(null);
 
   const solve = async (text: string) => {
-    if (!apiKey) { setError('Set your OpenRouter key above'); return; }
     setLoading(true); setError(null);
     try {
-      const sol = await generateSolution(text, apiKey, model);
+      const sol = await generateSolution(text, model);
       setSolution(sol);
     } catch (e: any) { setError(e.message); } finally { setLoading(false); }
   };
@@ -42,7 +40,7 @@ export const Home: React.FC = () => {
       const res = await fetch('/api/llm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: 'Hello', key: apiKey })
+        body: JSON.stringify({ text: 'Hello' })
       });
       const data = await res.json();
       if (res.ok) {
